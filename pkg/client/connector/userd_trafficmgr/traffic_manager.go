@@ -24,6 +24,7 @@ import (
 	rpc "github.com/telepresenceio/telepresence/rpc/v2/connector"
 	"github.com/telepresenceio/telepresence/rpc/v2/daemon"
 	"github.com/telepresenceio/telepresence/rpc/v2/manager"
+	"github.com/telepresenceio/telepresence/v2/pkg/a8rcloud"
 	"github.com/telepresenceio/telepresence/v2/pkg/client"
 	"github.com/telepresenceio/telepresence/v2/pkg/client/actions"
 	"github.com/telepresenceio/telepresence/v2/pkg/client/connector/userd_k8s"
@@ -168,7 +169,10 @@ func (tm *trafficManager) Run(c context.Context) error {
 		InstallId: tm.installID,
 		Product:   "telepresence",
 		Version:   client.Version(),
-		ApiKey:    func() string { tok, _ := tm.callbacks.GetCloudAPIKey(c, "manager", false); return tok }(),
+		ApiKey: func() string {
+			tok, _ := tm.callbacks.GetCloudAPIKey(c, a8rcloud.KeyDescTrafficManager, false)
+			return tok
+		}(),
 	})
 	if err != nil {
 		return client.CheckTimeout(tc, fmt.Errorf("manager.ArriveAsClient: %w", err))
@@ -414,7 +418,10 @@ func (tm *trafficManager) remain(c context.Context) error {
 		case <-ticker.C:
 			_, err := tm.managerClient.Remain(c, &manager.RemainRequest{
 				Session: tm.session(),
-				ApiKey:  func() string { tok, _ := tm.callbacks.GetCloudAPIKey(c, "manager", false); return tok }(),
+				ApiKey: func() string {
+					tok, _ := tm.callbacks.GetCloudAPIKey(c, a8rcloud.KeyDescTrafficManager, false)
+					return tok
+				}(),
 			})
 			if err != nil {
 				if c.Err() != nil {

@@ -22,6 +22,7 @@ import (
 	"github.com/datawire/dlib/dgroup"
 	"github.com/datawire/dlib/dhttp"
 	"github.com/datawire/dlib/dlog"
+	"github.com/telepresenceio/telepresence/v2/pkg/a8rcloud"
 	"github.com/telepresenceio/telepresence/v2/pkg/client"
 	"github.com/telepresenceio/telepresence/v2/pkg/client/cache"
 	"github.com/telepresenceio/telepresence/v2/pkg/client/connector/internal/scout"
@@ -31,7 +32,6 @@ import (
 const (
 	callbackPath = "/callback"
 	apikeysFile  = "apikeys.json"
-	keyDescRoot  = ""
 )
 
 var ErrNotLoggedIn = errors.New("not logged in")
@@ -347,7 +347,7 @@ func (l *loginExecutor) LoginAPIKey(ctx context.Context, apikey string) (err err
 	l.loginMu.Lock()
 	defer l.loginMu.Unlock()
 
-	l.apikeys[l.env.LoginDomain][keyDescRoot] = apikey
+	l.apikeys[l.env.LoginDomain][a8rcloud.KeyDescRoot] = apikey
 	if err := cache.SaveToUserCache(ctx, l.apikeys, apikeysFile); err != nil {
 		return err
 	}
@@ -392,7 +392,7 @@ func (l *loginExecutor) getToken(ctx context.Context) (string, error) {
 
 // Must hold l.loginMu to call this.
 func (l *loginExecutor) lockedGetCreds() (map[string]string, error) {
-	rootKey, rootKeyOK := l.apikeys[l.env.LoginDomain][keyDescRoot]
+	rootKey, rootKeyOK := l.apikeys[l.env.LoginDomain][a8rcloud.KeyDescRoot]
 	switch {
 	case rootKeyOK:
 		return map[string]string{
